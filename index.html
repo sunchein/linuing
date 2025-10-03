@@ -14,6 +14,184 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   
   <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#F8F5F0',
+            gold: '#D4AF37',
+            lavender: '#9F86C0',
+            olive: '#556B2F',
+            rose: '#F8C4C4',
+          },
+          fontFamily: {
+            serif: ['Playfair Display', 'serif'],
+            sans: ['Lato', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow-lg {
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+      }
+      .card-hover:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+    }
+    /* Modal 樣式 */
+    .modal-overlay {
+      transition: opacity 0.3s ease;
+    }
+    .modal-container {
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+
+<body class="bg-cream font-sans text-gray-800 overflow-x-hidden">
+  <header class="fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
+    <nav class="bg-cream/90 backdrop-blur-md py-4 px-6 md:px-12 shadow-sm">
+      <div class="container mx-auto flex justify-between items-center">
+        <a href="#" class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-full bg-gold flex items-center justify-center">
+            <span class="text-white font-serif font-bold text-xl">靈</span>
+          </div>
+          <span class="font-serif font-bold text-xl md:text-2xl text-gray-800">靈韻美學</span>
+        </a>
+        
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="#" class="font-medium hover:text-gold transition-colors duration-200">首頁</a>
+          <a href="#shop" class="font-medium hover:text-gold transition-colors duration-200">靈性產品</a>
+          <a href="#contact" class="font-medium hover:text-gold transition-colors duration-200">聯絡我們</a>
+          <button id="cart-button" class="relative text-gray-800 hover:text-gold transition-colors">
+            <i class="fa fa-shopping-cart text-2xl"></i>
+            <span id="cart-item-count" class="absolute -top-2 -right-2 bg-rose text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+          </button>
+        </div>
+        
+        <button id="menu-toggle" class="md:hidden text-gray-800 focus:outline-none">
+          <i class="fa fa-bars text-xl"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="min-h-screen pt-24 relative overflow-hidden">
+        <div class="relative h-[70vh] flex items-center justify-center overflow-hidden">
+            <img src="https://picsum.photos/id/1060/1920/1080" alt="靈性之美" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/50 z-10"></div>
+            <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-center px-6">
+                <h2 class="text-white font-serif text-3xl md:text-5xl lg:text-6xl font-bold mb-4 text-shadow-lg">讓信仰成為感官的祝福</h2>
+                <p class="text-white/90 text-lg md:text-xl max-w-2xl mb-8">在色彩、香氣、文字與靜默中，重新覺醒你與神的連結。</p>
+                <a href="#shop" class="bg-gold hover:bg-gold/90 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 shadow-lg">
+                開始選購
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <section id="shop" class="py-20 bg-gradient-to-b from-rose/10 to-cream">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="font-serif text-3xl md:text-4xl font-bold mb-6 text-gray-800">靈性產品</h2>
+          <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+            香氣、色彩、文字與創作，每一件作品都承載著祝福。
+          </p>
+        </div>
+        
+        <div id="product-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          </div>
+      </div>
+    </section>
+
+    <section id="contact" class="py-20">
+       <div class="container mx-auto px-6 text-center">
+            <h2 class="font-serif text-3xl md:text-4xl font-bold mb-6 text-gray-800">與我們連結</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                若有任何問題，歡迎隨時與我們聯繫。<br>
+                Email: info@lingyun-aesthetics.com | 電話: +886-2-1234-5678
+            </p>
+       </div>
+    </section>
+  </main>
+  
+  <div id="order-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none">
+    <div class="modal-container bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform scale-95">
+      <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
+        <h2 class="text-2xl font-serif font-bold text-gray-800">您的訂單</h2>
+        <button id="close-modal-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+      </div>
+
+      <div class="p-6">
+        <div id="cart-view">
+          <div id="cart-items-container" class="mb-6 space-y-4">
+            </div>
+          <div class="border-t pt-4 text-right">
+            <p class="text-lg">小計: <span id="subtotal">NT$ 0</span></p>
+            <p class="text-lg">營業稅 (5%): <span id="tax">NT$ 0</span></p>
+            <p class="text-2xl font-bold">總計: <span id="total">NT$ 0</span></p>
+          </div>
+          <div class="mt-8 text-center">
+            <button id="to-checkout-button" class="w-full md:w-auto bg-gold text-white px-8 py-3 rounded-lg font-medium hover:bg-gold/90 transition-colors disabled:bg-gray-400">
+              填寫訂購資訊
+            </button>
+          </div>
+        </div>
+
+        <div id="checkout-view" class="hidden">
+          <h3 class="font-serif text-xl font-bold mb-6">收件人資訊</h3>
+          <form id="customer-form" class="space-y-4">
+            <div>
+              <label for="customer-name" class="block text-sm font-medium text-gray-700">真實姓名</label>
+              <input type="text" id="customer-name" name="name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-gold focus:border-gold">
+            </div>
+            <div>
+              <label for="customer-phone" class="block text-sm font-medium text-gray-700">聯絡電話</label>
+              <input type="tel" id="customer-phone" name="phone" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-gold focus:border-gold">
+            </div>
+            <div>
+              <label for="customer-address" class="block text-sm font-medium text-gray-700">收件地址</label>
+              <input type="text" id="customer-address" name="address" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-gold focus:border-gold">
+            </div>
+            <div class="mt-8 flex flex-col md:flex-row gap-4">
+              <button type="button" id="back-to-cart-button" class="w-full md:w-auto bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-medium hover:bg-gray-300">
+                返回修改訂單
+              </button>
+              <button type="submit" class="w-full md:w-auto bg-gold text-white px-8 py-3 rounded-lg font-medium hover:bg-gold/90">
+                確認訂單並產生訂單資訊
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div id="confirmation-view" class="hidden text-center">
+          <h3 class="font-serif text-xl font-bold mb-4 text-olive">感謝您的訂購！</h3>
+          <p class="text-gray-600 mb-6">您的訂單已成功建立，請下載訂單 PDF 存檔，並依下列資訊完成匯款。</p>
+          <div class="bg-gold/10 p-6 rounded-lg border-l-4 border-gold text-left mb-6">
+            <h4 class="font-bold text-lg mb-2">匯款資訊</h4>
+            <p><strong>銀行：</strong> 元大銀行 南屯分行</p>
+            <p><strong>帳號：</strong> 00168266574918</p>
+            <p class="mt-4">完成匯款後，請掃描下方 QR Code 加入我們的官方帳號，並告知我們您的「訂單編號」及「匯款帳號末四碼」，我們將盡快為您處理出貨事宜。</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <img id="qr-code-placeholder" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://YOUR_LINE_OA_LINK" alt="官方帳號 QR Code" class="w-36 h-36 mb-2">
+            <p class="text-sm text-gray-500">掃描加入官方帳號</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdf-content" class="hidden"></div>
+
+
+  <script>
     document.addEventListener('DOMContentLoaded', () => {
       /**************************************************/
       /***** 1. 產品資料庫：請在這裡管理您的產品 *****/
@@ -68,6 +246,7 @@
       // 渲染產品
       const productListContainer = document.getElementById('product-list');
       function renderProducts() {
+        if (!productListContainer) return; // 安全檢查
         productListContainer.innerHTML = '';
         products.forEach(product => {
           const productHTML = `
@@ -116,6 +295,7 @@
       // 更新購物車
       function updateCart() {
         const container = document.getElementById('cart-items-container');
+        if (!container) return; // 安全檢查
         container.innerHTML = '';
         let subtotal = 0;
         if (cart.length === 0) {
@@ -125,6 +305,7 @@
           document.getElementById('to-checkout-button').disabled = false;
           cart.forEach(item => {
             const product = products.find(p => p.id === item.id);
+            if (!product) return;
             const itemTotal = product.price * item.quantity;
             subtotal += itemTotal;
             container.innerHTML += `
@@ -180,6 +361,7 @@
         let itemsHTML = '';
         let subtotal = cart.reduce((sum, item) => {
             const product = products.find(p => p.id === item.id);
+            if (!product) return sum;
             itemsHTML += `<tr>
                 <td style="padding: 8px; border-bottom: 1px solid #ddd;">${product.name} (${product.id})</td>
                 <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${item.quantity}</td>
@@ -204,7 +386,7 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <thead><tr>
                     <th style="text-align: left; padding: 8px; border-bottom: 2px solid #333;">品名</th>
-                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #333;">數量</th>
+                    <th style="text-align: right; padding: 8px; border-bottom: 2px solid #333;">数量</th>
                     <th style="text-align: right; padding: 8px; border-bottom: 2px solid #333;">單價</th>
                     <th style="text-align: right; padding: 8px; border-bottom: 2px solid #333;">小計</th>
                 </tr></thead>
