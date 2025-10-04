@@ -82,9 +82,6 @@
             const tax = subtotal * 0.05;
             const total = subtotal + tax;
             
-            // 【重要】您需要將此處的 QR Code Base64 換成您自己的
-            const QR_CODE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+OhAAAABlBMVEX///8AAABVwtN+AAABBUlEQVRIx2MYBexg4AD8B3JkZGRkZGRk5GRkZGRkZGRkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGTkZGTkZGRkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGTkZGTkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGTkZAAAV5sAASVT2dgAAAAASUVORK5CYII=';
-
             const itemsHTML = items.map(item => `
                 <tr>
                     <td class="py-2 border-b">${item.name}</td>
@@ -94,6 +91,7 @@
                 </tr>
             `).join('');
             
+            // 【關鍵修改】我們直接使用圖片路徑，不再需要 Base64 字串
             container.innerHTML = `
                 <h2 class="font-serif text-2xl font-bold mb-1">訂單資訊</h2>
                 <p class="text-gray-500 mb-6">訂單狀態：訂單成立，等待匯款</p>
@@ -137,7 +135,7 @@
                             <p><strong>帳號：</strong> 00168266574918</p>
                             <p class="mt-4 text-sm">完成匯款後，請掃描右側 QR Code 加入我們的官方帳號，並告知您的「訂單編號」及「匯款帳號末四碼」，我們將盡快為您出貨。</p>
                         </div>
-                        <img src="${QR_CODE_BASE64}" alt="官方帳號 QR Code" class="w-28 h-28">
+                        <img src="images/line-qrcode.png" alt="官方帳號 QR Code" class="w-28 h-28">
                     </div>
                 </div>
             `;
