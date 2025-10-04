@@ -104,7 +104,11 @@
         </div>
         <div id="checkout-view" class="hidden">
           <h3 class="font-serif text-xl font-bold mb-6">收件人資訊</h3>
-          <form id="customer-form" class="space-y-4">
+          
+          <form id="customer-form" class="space-y-4" data-netlify="true" name="order">
+            
+            <input type="hidden" name="order-details">
+
             <div>
               <label for="customer-name" class="block text-sm font-medium text-gray-700">真實姓名</label>
               <input type="text" id="customer-name" name="name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-gold focus:border-gold">
@@ -246,30 +250,43 @@
       });
 
       // ===============================================
-      // ===== 【最終方案】處理訂單提交 =====
+      // ===== 【關鍵修改 3】處理訂單提交 =====
       // ===============================================
-      document.getElementById('customer-form').addEventListener('submit', (e) => {
+      const customerForm = document.getElementById('customer-form');
+      customerForm.addEventListener('submit', (e) => {
+        // 將購物車商品轉換為純文字，方便郵件閱讀
+        const orderDetailsText = cart.map(item => {
+            const product = products.find(p => p.id === item.id);
+            return `${product.name} x ${item.quantity}`;
+        }).join('\n'); // 用換行符號分隔每個商品
+        
+        // 將轉換後的文字設定到隱藏欄位的值
+        customerForm.querySelector('input[name="order-details"]').value = orderDetailsText;
+        
+        // **注意：這裡不再需要 e.preventDefault() 和跳轉程式碼**
+        // **Netlify 會自動處理後續動作**
+        // **但為了讓我們的舊流程(跳轉)能繼續，我們手動處理**
         e.preventDefault();
-        const customerData = Object.fromEntries(new FormData(e.target).entries());
-        const orderNumber = `LY${new Date().getTime()}`;
-        
-        // 組合完整的訂單資料，包含產品完整資訊
-        const orderDetails = {
-          customer: customerData,
-          items: cart.map(item => {
-              const product = products.find(p => p.id === item.id);
-              return { ...product, quantity: item.quantity }; // 將產品資訊與數量結合
-          }),
-          orderNumber: orderNumber,
-          date: new Date().toLocaleDateString('zh-TW'),
-        };
-        
-        // 使用 localStorage 將訂單資料傳遞到下一個頁面
-        // localStorage 是瀏覽器的一個小型儲存空間
-        localStorage.setItem('latestOrder', JSON.stringify(orderDetails));
-        
-        // 跳轉到確認頁面
-        window.location.href = 'confirmation.html';
+        const formData = new FormData(customerForm);
+        fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(formData).toString(),
+        })
+        .then(() => {
+            // Netlify 表單提交成功後，才執行原本的跳轉邏輯
+            const customerData = Object.fromEntries(new FormData(e.target).entries());
+            const orderNumber = `LY${new Date().getTime()}`;
+            const fullOrderDetails = {
+              customer: customerData,
+              items: cart.map(item => ({ ...products.find(p => p.id === item.id), quantity: item.quantity })),
+              orderNumber: orderNumber,
+              date: new Date().toLocaleDateString('zh-TW'),
+            };
+            localStorage.setItem('latestOrder', JSON.stringify(fullOrderDetails));
+            window.location.href = 'confirmation.html';
+        })
+        .catch((error) => alert(error));
       });
 
       renderProducts();
