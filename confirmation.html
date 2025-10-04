@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂單確認 - 靈韻美學</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { cream: '#F8F5F0', gold: '#D4AF37', olive: '#556B2F' },
+                    fontFamily: { serif: ['Playfair Display', 'serif'], sans: ['Lato', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 列印時的樣式 */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact; /* 確保背景色和顏色能被列印 */
+                print-color-adjust: exact;
+            }
+            .no-print {
+                display: none !important; /* 隱藏不需要列印的元素 */
+            }
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-cream font-sans text-gray-800">
+
+    <div class="container mx-auto max-w-4xl my-10 px-4">
+        
+        <div class="text-center mb-8 no-print">
+            <a href="index.html" class="flex items-center justify-center space-x-2 mb-4">
+                <div class="w-10 h-10 rounded-full bg-gold flex items-center justify-center">
+                    <span class="text-white font-serif font-bold text-xl">靈</span>
+                </div>
+                <span class="font-serif font-bold text-2xl text-gray-800">靈韻美學</span>
+            </a>
+            <h1 class="font-serif text-3xl font-bold text-olive">感謝您的訂購！</h1>
+            <p class="text-gray-600 mt-2">請確認您的訂單資訊，並可將此頁面儲存為 PDF 存檔。</p>
+        </div>
+
+        <div id="order-details-container" class="bg-white p-8 md:p-12 rounded-lg shadow-lg border border-gray-200 print-container">
+            <div class="text-center py-10"><p>正在載入訂單資訊...</p></div>
+        </div>
+
+        <div class="mt-8 text-center no-print">
+            <button onclick="window.print()" class="bg-gold text-white px-10 py-3 rounded-lg font-medium hover:bg-gold/90 transition-colors text-lg">
+                <i class="fa fa-print mr-2"></i> 列印 / 儲存為 PDF
+            </button>
+            <a href="index.html" class="inline-block mt-4 text-gray-600 hover:text-gold">返回商店</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const orderDataJSON = localStorage.getItem('latestOrder');
+            const container = document.getElementById('order-details-container');
+
+            if (!orderDataJSON) {
+                container.innerHTML = '<p class="text-center text-red-500">找不到訂單資訊，請返回商店重新下單。</p>';
+                return;
+            }
+
+            const orderData = JSON.parse(orderDataJSON);
+            const { customer, items, orderNumber, date } = orderData;
+            
+            const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.05;
+            const total = subtotal + tax;
+            
+            // 【重要】您需要將此處的 QR Code Base64 換成您自己的
+            const QR_CODE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+OhAAAABlBMVEX///8AAABVwtN+AAABBUlEQVRIx2MYBexg4AD8B3JkZGRkZGRk5GRkZGRkZGRkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGTkZGTkZGRkZGTkZGRkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGTkZGTkZGRkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGTkZGRkZGTkZAAAV5sAASVT2dgAAAAASUVORK5CYII=';
+
+            const itemsHTML = items.map(item => `
+                <tr>
+                    <td class="py-2 border-b">${item.name}</td>
+                    <td class="py-2 border-b text-center">${item.quantity}</td>
+                    <td class="py-2 border-b text-right">NT$ ${item.price.toLocaleString()}</td>
+                    <td class="py-2 border-b text-right">NT$ ${(item.price * item.quantity).toLocaleString()}</td>
+                </tr>
+            `).join('');
+            
+            container.innerHTML = `
+                <h2 class="font-serif text-2xl font-bold mb-1">訂單資訊</h2>
+                <p class="text-gray-500 mb-6">訂單狀態：訂單成立，等待匯款</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-sm">
+                    <div>
+                        <h3 class="font-bold mb-2 border-b pb-1">收件資訊</h3>
+                        <p><strong>姓名：</strong> ${customer.name}</p>
+                        <p><strong>電話：</strong> ${customer.phone}</p>
+                        <p><strong>地址：</strong> ${customer.address}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-2 border-b pb-1">訂單摘要</h3>
+                        <p><strong>訂單編號：</strong> ${orderNumber}</p>
+                        <p><strong>訂購日期：</strong> ${date}</p>
+                    </div>
+                </div>
+                <h3 class="font-bold mb-2 text-lg">訂單明細</h3>
+                <table class="w-full text-sm mb-8">
+                    <thead>
+                        <tr class="border-b-2 border-gray-300">
+                            <th class="text-left font-bold py-2">品名</th>
+                            <th class="text-center font-bold py-2">數量</th>
+                            <th class="text-right font-bold py-2">單價</th>
+                            <th class="text-right font-bold py-2">小計</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHTML}</tbody>
+                </table>
+                <div class="flex justify-end">
+                    <div class="w-full md:w-1/2">
+                        <div class="flex justify-between py-1"><span class="text-gray-600">小計</span><span>NT$ ${Math.round(subtotal).toLocaleString()}</span></div>
+                        <div class="flex justify-between py-1"><span class="text-gray-600">營業稅 (5%)</span><span>NT$ ${Math.round(tax).toLocaleString()}</span></div>
+                        <div class="flex justify-between py-2 mt-2 border-t-2 font-bold text-lg"><span class="">總計</span><span>NT$ ${Math.round(total).toLocaleString()}</span></div>
+                    </div>
+                </div>
+                <div class="mt-10 pt-6 border-t-2 border-dashed">
+                    <h3 class="font-bold mb-2 text-lg">匯款資訊 & 後續步驟</h3>
+                    <div class="flex flex-col md:flex-row gap-8 items-center bg-gold/10 p-6 rounded-lg">
+                        <div class="flex-grow">
+                            <p><strong>銀行：</strong> 元大銀行 南屯分行</p>
+                            <p><strong>帳號：</strong> 00168266574918</p>
+                            <p class="mt-4 text-sm">完成匯款後，請掃描右側 QR Code 加入我們的官方帳號，並告知您的「訂單編號」及「匯款帳號末四碼」，我們將盡快為您出貨。</p>
+                        </div>
+                        <img src="${QR_CODE_BASE64}" alt="官方帳號 QR Code" class="w-28 h-28">
+                    </div>
+                </div>
+            `;
+        });
+    </script>
+
+</body>
+</html>

@@ -131,4 +131,149 @@
     document.addEventListener('DOMContentLoaded', () => {
       const products = [
         { id: 'prod001', name: '乳香靜思者香氛', image: 'images/prod001.jpg', description: '專為需要深度靜思與祈禱的靈性探索者設計。溫暖、神聖的氣息，幫助你進入安靜的內在空間，與神相遇。', specs: '容量: 100ml | 成分: 天然精油、酒精', price: 1200 },
-        { id: 'prod002', name: '玫瑰關懷者香氛', image: 'images/prod002.jpg', description: '溫柔的玫瑰香氣，象徵神的愛與關懷。適合在需要安慰與療
+        { id: 'prod002', name: '玫瑰關懷者香氛', image: 'images/prod002.jpg', description: '溫柔的玫瑰香氣，象徵神的愛與關懷。適合在需要安慰與療癒的時刻使用，感受被溫柔擁抱的平靜。', specs: '容量: 100ml | 成分: 天然精油、酒精', price: 1200 },
+        { id: 'prod003', name: '柑橘創造者香氛', image: 'images/prod003.jpg', description: '充滿活力的柑橘調，激發創造力與喜樂。在靈性創作或迎接新的一天時使用，帶來陽光般的能量。', specs: '容量: 100ml | 成分: 天然精油、酒精', price: 1100 },
+        { id: 'prod004', name: '靈性入門包', image: 'images/prod004.jpg', description: '包含三款經典香氛小樣、靈修筆記本與經文卡。是開始您的靈性美學旅程的最佳選擇。', specs: '內容: 香氛 10ml x3, 筆記本 x1, 經文卡 x5', price: 2800 },
+      ];
+      const TAX_RATE = 0.05;
+      let cart = [];
+
+      const productListContainer = document.getElementById('product-list');
+      function renderProducts() {
+        if (!productListContainer) return;
+        productListContainer.innerHTML = products.map(p => `
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition duration-300 card-hover">
+            <div class="h-64 overflow-hidden"><img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover"></div>
+            <div class="p-6 flex flex-col flex-grow">
+              <h3 class="font-serif text-xl font-bold mb-2">${p.name}</h3>
+              <p class="text-gray-500 text-sm mb-1">編號: ${p.id}</p>
+              <p class="text-gray-500 text-sm mb-3">規格: ${p.specs}</p>
+              <p class="text-gray-600 mb-4 flex-grow">${p.description}</p>
+              <div class="flex justify-between items-center mt-auto pt-4 border-t">
+                <span class="text-gold font-bold text-lg">NT$ ${p.price.toLocaleString()}</span>
+                <button onclick="addToCart('${p.id}')" class="bg-gold hover:bg-gold/90 text-white px-4 py-2 rounded-lg font-medium">選購</button>
+              </div>
+            </div>
+          </div>`).join('');
+      }
+
+      window.addToCart = (id) => {
+        const item = cart.find(i => i.id === id);
+        if (item) item.quantity++; else cart.push({ id, quantity: 1 });
+        updateCart();
+        const el = document.createElement('div');
+        el.className = 'fixed top-24 right-5 bg-olive text-white px-6 py-3 rounded-lg shadow-lg transition-transform transform translate-x-full';
+        el.innerText = `${products.find(p => p.id === id).name} 已加入訂單！`;
+        document.body.appendChild(el);
+        setTimeout(() => el.style.transform = 'translateX(0)', 10);
+        setTimeout(() => {
+          el.style.transform = 'translateX(calc(100% + 20px))';
+          setTimeout(() => el.remove(), 300);
+        }, 3000);
+      }
+
+      function updateCart() {
+        const container = document.getElementById('cart-items-container');
+        if (!container) return;
+        let subtotal = 0;
+        document.getElementById('to-checkout-button').disabled = cart.length === 0;
+        if (cart.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500">您的訂單是空的。</p>';
+        } else {
+          container.innerHTML = cart.map(item => {
+            const product = products.find(p => p.id === item.id);
+            if (!product) return '';
+            const itemTotal = product.price * item.quantity;
+            subtotal += itemTotal;
+            return `<div class="flex items-center gap-4 border-b pb-4">
+                <img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded-md">
+                <div class="flex-grow">
+                  <p class="font-bold">${product.name}</p>
+                  <p class="text-sm text-gray-500">NT$ ${product.price.toLocaleString()}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="updateQuantity('${item.id}', -1)" class="w-7 h-7 bg-gray-200 rounded-full font-bold">-</button>
+                  <span>${item.quantity}</span>
+                  <button onclick="updateQuantity('${item.id}', 1)" class="w-7 h-7 bg-gray-200 rounded-full font-bold">+</button>
+                </div>
+                <p class="w-24 text-right font-medium">NT$ ${itemTotal.toLocaleString()}</p>
+                <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700">&times;</button>
+              </div>`;
+          }).join('');
+        }
+        const tax = subtotal * TAX_RATE;
+        document.getElementById('subtotal').innerText = `NT$ ${Math.round(subtotal).toLocaleString()}`;
+        document.getElementById('tax').innerText = `NT$ ${Math.round(tax).toLocaleString()}`;
+        document.getElementById('total').innerText = `NT$ ${Math.round(subtotal + tax).toLocaleString()}`;
+        document.getElementById('cart-item-count').innerText = cart.reduce((s, i) => s + i.quantity, 0);
+      }
+
+      window.updateQuantity = (id, change) => {
+        const item = cart.find(i => i.id === id);
+        if (item) {
+          item.quantity += change;
+          if (item.quantity <= 0) removeFromCart(id); else updateCart();
+        }
+      }
+      window.removeFromCart = (id) => {
+        cart = cart.filter(i => i.id !== id);
+        updateCart();
+      }
+
+      const modal = document.getElementById('order-modal');
+      const cartView = document.getElementById('cart-view');
+      const checkoutView = document.getElementById('checkout-view');
+      const openModal = () => {
+        updateCart();
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        modal.querySelector('.modal-container').classList.remove('scale-95');
+      };
+      const closeModal = () => {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modal.querySelector('.modal-container').classList.add('scale-95');
+      };
+
+      document.getElementById('cart-button').addEventListener('click', openModal);
+      document.getElementById('close-modal-button').addEventListener('click', closeModal);
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+      document.getElementById('to-checkout-button').addEventListener('click', () => {
+        cartView.classList.add('hidden');
+        checkoutView.classList.remove('hidden');
+      });
+      document.getElementById('back-to-cart-button').addEventListener('click', () => {
+        checkoutView.classList.add('hidden');
+        cartView.classList.remove('hidden');
+      });
+
+      // ===============================================
+      // ===== 【最終方案】處理訂單提交 =====
+      // ===============================================
+      document.getElementById('customer-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const customerData = Object.fromEntries(new FormData(e.target).entries());
+        const orderNumber = `LY${new Date().getTime()}`;
+        
+        // 組合完整的訂單資料，包含產品完整資訊
+        const orderDetails = {
+          customer: customerData,
+          items: cart.map(item => {
+              const product = products.find(p => p.id === item.id);
+              return { ...product, quantity: item.quantity }; // 將產品資訊與數量結合
+          }),
+          orderNumber: orderNumber,
+          date: new Date().toLocaleDateString('zh-TW'),
+        };
+        
+        // 使用 localStorage 將訂單資料傳遞到下一個頁面
+        // localStorage 是瀏覽器的一個小型儲存空間
+        localStorage.setItem('latestOrder', JSON.stringify(orderDetails));
+        
+        // 跳轉到確認頁面
+        window.location.href = 'confirmation.html';
+      });
+
+      renderProducts();
+    });
+  </script>
+</body>
+</html>
