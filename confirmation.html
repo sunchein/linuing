@@ -91,7 +91,7 @@
                 </tr>
             `).join('');
             
-            // 【關鍵修改】我們直接使用圖片路徑，不再需要 Base64 字串
+            // 將完整訂單資訊渲染到頁面上
             container.innerHTML = `
                 <h2 class="font-serif text-2xl font-bold mb-1">訂單資訊</h2>
                 <p class="text-gray-500 mb-6">訂單狀態：訂單成立，等待匯款</p>
@@ -129,13 +129,13 @@
                 </div>
                 <div class="mt-10 pt-6 border-t-2 border-dashed">
                     <h3 class="font-bold mb-2 text-lg">匯款資訊 & 後續步驟</h3>
-                    <div class="flex flex-col md:flex-row gap-8 items-center bg-gold/10 p-6 rounded-lg">
+                    <div class="flex flex-row gap-4 items-start bg-gold/10 p-4 rounded-lg">
                         <div class="flex-grow">
                             <p><strong>銀行：</strong> 元大銀行 南屯分行</p>
                             <p><strong>帳號：</strong> 00168266574918</p>
                             <p class="mt-4 text-sm">完成匯款後，請掃描右側 QR Code 加入我們的官方帳號，並告知您的「訂單編號」及「匯款帳號末四碼」，我們將盡快為您出貨。</p>
                         </div>
-                        <img src="images/line-qrcode.png" alt="官方帳號 QR Code" class="w-28 h-28">
+                        <img src="images/line-qrcode.png" alt="官方帳號 QR Code" class="w-28 h-28 flex-shrink-0">
                     </div>
                 </div>
             `;
