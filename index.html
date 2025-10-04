@@ -108,7 +108,11 @@
           <form id="customer-form" class="space-y-4" data-netlify="true" name="order" netlify-honeypot="bot-field">
             <input type="hidden" name="form-name" value="order">
             <p class="hidden"><label>Don’t fill this out if you’re human: <input name="bot-field" /></label></p>
-            <input type="hidden" name="order-details">
+            
+            <textarea name="Order Details" class="hidden"></textarea>
+            <input type="hidden" name="Subtotal">
+            <input type="hidden" name="Tax">
+            <input type="hidden" name="Total">
 
             <div>
               <label for="customer-name" class="block text-sm font-medium text-gray-700">真實姓名</label>
@@ -133,7 +137,6 @@
   </div>
 
   <script>
-      // === 全域變數和資料庫 ===
       const products = [
         { id: 'prod001', name: '乳香靜思者香氛', image: 'images/prod001.jpg', description: '專為需要深度靜思與祈禱的靈性探索者設計。溫暖、神聖的氣息，幫助你進入安靜的內在空間，與神相遇。', specs: '容量: 100ml | 成分: 天然精油、酒精', price: 1200 },
         { id: 'prod002', name: '玫瑰關懷者香氛', image: 'images/prod002.jpg', description: '溫柔的玫瑰香氣，象徵神的愛與關懷。適合在需要安慰與療癒的時刻使用，感受被溫柔擁抱的平靜。', specs: '容量: 100ml | 成分: 天然精油、酒精', price: 1200 },
@@ -143,7 +146,6 @@
       const TAX_RATE = 0.05;
       let cart = [];
 
-      // === 函式定義 ===
       function renderProducts() {
         const container = document.getElementById('product-list');
         if (!container) return;
@@ -173,7 +175,7 @@
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 3000);
       }
-      window.addToCart = addToCart; // 將函式掛載到 window
+      window.addToCart = addToCart;
 
       function updateCart() {
         const container = document.getElementById('cart-items-container');
@@ -226,7 +228,6 @@
       }
       window.removeFromCart = removeFromCart;
 
-      // === 事件監聽 ===
       const modal = document.getElementById('order-modal');
       const cartView = document.getElementById('cart-view');
       const checkoutView = document.getElementById('checkout-view');
@@ -255,14 +256,26 @@
 
       const customerForm = document.getElementById('customer-form');
       customerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // 【關鍵修改】計算金額和產生詳細訂單文字
+        let subtotal = 0;
         const orderDetailsText = cart.map(item => {
             const product = products.find(p => p.id === item.id);
-            return `${product.name} x ${item.quantity}`;
-        }).join('; ');
+            const itemTotal = product.price * item.quantity;
+            subtotal += itemTotal;
+            return `${product.name} x ${item.quantity}  (小計: NT$ ${itemTotal.toLocaleString()})`;
+        }).join('\n'); // 使用換行符號，讓郵件更容易閱讀
+
+        const tax = subtotal * TAX_RATE;
+        const total = subtotal + tax;
         
-        customerForm.querySelector('input[name="order-details"]').value = orderDetailsText;
+        // 將計算好的值填入隱藏欄位
+        customerForm.querySelector('textarea[name="Order Details"]').value = orderDetailsText;
+        customerForm.querySelector('input[name="Subtotal"]').value = `NT$ ${Math.round(subtotal).toLocaleString()}`;
+        customerForm.querySelector('input[name="Tax"]').value = `NT$ ${Math.round(tax).toLocaleString()}`;
+        customerForm.querySelector('input[name="Total"]').value = `NT$ ${Math.round(total).toLocaleString()}`;
         
-        e.preventDefault();
         const formData = new FormData(customerForm);
         fetch("/", {
             method: "POST",
@@ -270,6 +283,7 @@
             body: new URLSearchParams(formData).toString(),
         })
         .then(() => {
+            // Netlify 表單提交成功後，才執行原本的跳轉邏輯
             const customerData = Object.fromEntries(new FormData(e.target).entries());
             const orderNumber = `LY${new Date().getTime()}`;
             const fullOrderDetails = {
@@ -284,7 +298,6 @@
         .catch((error) => alert(error));
       });
 
-      // === 頁面初始執行 ===
       renderProducts();
   </script>
 </body>
